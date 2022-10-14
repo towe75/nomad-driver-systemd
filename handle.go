@@ -89,9 +89,14 @@ func (h *taskHandle) runUnitMonitor() {
 				h.properties = props
 				h.stateLock.Unlock()
 				state := props["ActiveState"]
-				if state == "inactive" || props["SubState"] == "exited" {
+				// is the unit still running?
+				if state == "inactive" || state == "failed" || props["SubState"] == "exited" {
 					gone = true
-					// TODO: propagate OOM kills
+					h.logger.Debug("props", "Result", props["Result"])
+					if props["Result"] == "oom-kill" {
+						// propagate OOM kills
+						h.exitResult.OOMKilled = true
+					}
 					h.exitResult.ExitCode = int(props["ExecMainStatus"].(int32))
 					// cleanup
 					_, err = conn.StopUnitContext(h.driver.ctx, h.unitName, "replace", nil)
@@ -102,8 +107,6 @@ func (h *taskHandle) runUnitMonitor() {
 						h.logger.Debug("Unit removed", "unit", h.unitName)
 
 					}
-				} else {
-					// FIXME: handle stats etc
 				}
 			} else {
 				h.logger.Warn("Unable to get unit properties, may be gone", "unit", h.unitName, "err", err)

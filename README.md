@@ -97,8 +97,11 @@ Only a few features are implemented:
 * [x] Collect basic CPU and Memory metrics
 * [x] Optionally forward logs to nomad instead of system Journal
 * [x] Propagate command exit code back into nomad
-* [ ] Propagate command OOM kills back into nomad
-* [ ] Configure CPU, Memory, IO resource limits
+* [x] Propagate command OOM kills back into nomad
+* [ ] Configure CPU, resource limits
+* [x] Configure Memory resource limits
+* [ ] Configure Swap resource limits
+* [ ] Configure IO resource limits
 * [ ] Configure systemd based filesystem restrictions, e.g. chroot
 * [ ] Make use of systemd image mounts
 * [ ] Bind mount host volumes etc 

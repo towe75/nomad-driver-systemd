@@ -460,3 +460,52 @@ func TestSystemdDriver_ExitCode(t *testing.T) {
 		t.Fatalf("Task did not exit in time")
 	}
 }
+
+// test oom flag propagation
+func TestSystemdDriver_OOM(t *testing.T) {
+
+	if !tu.IsCI() {
+		t.Parallel()
+	}
+
+	taskCfg := newTaskConfig([]string{
+		// Incrementally creates a bigger and bigger variable.
+		// "stress",
+		// "--vm",
+		// "1",
+		"bash",
+		"-ec",
+		"sleep 1;for b in {0..99999999}; do a=$b$a; done",
+	})
+
+	task := &drivers.TaskConfig{
+		ID:        uuid.Generate(),
+		Name:      "oom",
+		AllocID:   uuid.Generate(),
+		Resources: createBasicResources(),
+	}
+	// limit memory to 5MB to trigger oom soon enough
+	task.Resources.NomadResources.Memory.MemoryMB = 5
+	require.NoError(t, task.EncodeConcreteDriverConfig(&taskCfg))
+
+	d := systemdDriverHarness(t, nil)
+	cleanup := d.MkAllocDir(task, true)
+	defer cleanup()
+
+	_, _, err := d.StartTask(task)
+	require.NoError(t, err)
+
+	defer d.DestroyTask(task.ID, true)
+
+	// Attempt to wait
+	waitCh, err := d.WaitTask(context.Background(), task.ID)
+	require.NoError(t, err)
+
+	select {
+	case res := <-waitCh:
+		require.False(t, res.Successful(), "Should have failed because of oom but was successful")
+		require.True(t, res.OOMKilled, "OOM Flag not set")
+	case <-time.After(time.Duration(tu.TestMultiplier()*5) * time.Second):
+		t.Fatalf("Task did not exit in time")
+	}
+}

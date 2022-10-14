@@ -54,3 +54,10 @@ func PropBool(name string, value bool) dbus.Property {
 		Value: ds.MakeVariant(value),
 	}
 }
+
+func PropUInt64(name string, value uint64) dbus.Property {
+	return dbus.Property{
+		Name:  name,
+		Value: ds.MakeVariant(value),
+	}
+}

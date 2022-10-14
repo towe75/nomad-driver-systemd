@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/coreos/go-systemd/v22/dbus"
-	ds "github.com/godbus/dbus/v5"
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/nomad/client/stats"
 	"github.com/hashicorp/nomad/drivers/shared/eventer"
@@ -307,7 +306,26 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 		// transient units are gone when main process finishes
 		// we need to write a file here to get exit code back into nomad
 		//PropExecStopPost([]string{"env"}),
-		{Name: "User", Value: ds.MakeVariant(cfg.User)},
+		PropString("User", cfg.User),
+
+		// Enforce memory limits
+		PropBool("MemoryAccounting", true),
+		// todo: configurable swap
+		PropUInt64("MemorySwapMax", uint64(0)),
+	}
+
+	// Memory
+	// FIXME: handle MemoryMB vs MemoryMaxMB, swap etc
+	if cfg.Resources.NomadResources.Memory.MemoryMaxMB > 0 {
+		properties = append(properties, PropUInt64("MemoryMax", uint64(cfg.Resources.NomadResources.Memory.MemoryMaxMB*1024*1024)))
+	}
+
+	if cfg.Resources.NomadResources.Memory.MemoryMB > 0 {
+		if cfg.Resources.NomadResources.Memory.MemoryMaxMB > 0 {
+			properties = append(properties, PropUInt64("MemoryHigh", uint64(cfg.Resources.NomadResources.Memory.MemoryMB*1024*1024)))
+		} else {
+			properties = append(properties, PropUInt64("MemoryMax", uint64(cfg.Resources.NomadResources.Memory.MemoryMB*1024*1024)))
+		}
 	}
 
 	// Logging
@@ -321,6 +339,8 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 	} else {
 		return nil, nil, fmt.Errorf("Invalid logging.driver option")
 	}
+
+	//hard, soft, err := memoryLimits(cfg.Resources.NomadResources.Memory, driverConfig.MemoryReservation)
 
 	unitName := BuildUnitNameForTask(cfg)
 	startupCh := make(chan string)
