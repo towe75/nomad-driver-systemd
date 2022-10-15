@@ -22,7 +22,7 @@ import (
 )
 
 var (
-	longRunningCommand = []string{"sleep", "1000d"}
+	longRunningCommand = []string{"/usr/bin/sleep", "1000d"}
 )
 
 // systemdDriverHarness wires up everything needed to launch a task with a systed driver.
@@ -188,7 +188,7 @@ func TestSystemdDriver_ShortLiving(t *testing.T) {
 		t.Parallel()
 	}
 
-	taskCfg := newTaskConfig([]string{"echo"})
+	taskCfg := newTaskConfig([]string{"/usr/bin/ls"})
 	task := &drivers.TaskConfig{
 		ID:        uuid.Generate(),
 		Name:      "shortliving",
@@ -229,7 +229,7 @@ func TestSystemdDriver_AllocDir(t *testing.T) {
 	file := "output.txt"
 
 	taskCfg := newTaskConfig([]string{
-		"sh",
+		"/bin/sh",
 		"-c",
 		fmt.Sprintf(`echo -n %s > $%s/%s`,
 			string(exp), taskenv.AllocDir, file),
@@ -286,7 +286,7 @@ func TestSystemdDriver_LogNomad(t *testing.T) {
 	stderrMagic := uuid.Generate()
 
 	taskCfg := newTaskConfig([]string{
-		"sh",
+		"/bin/sh",
 		"-c",
 		fmt.Sprintf("echo %s; 1>&2 echo %s", stdoutMagic, stderrMagic),
 	})
@@ -331,8 +331,9 @@ func TestSystemdDriver_Env(t *testing.T) {
 	}
 
 	taskCfg := newTaskConfig([]string{
-		"echo",
-		"$testvar",
+		"/bin/sh",
+		"-c",
+		"echo $testvar",
 	})
 
 	testvalue := uuid.Generate()
@@ -381,7 +382,7 @@ func TestSystemdDriver_User(t *testing.T) {
 
 	taskCfg := newTaskConfig([]string{
 		// print our username to stdout
-		"whoami",
+		"/usr/bin/whoami",
 	})
 
 	task := &drivers.TaskConfig{
@@ -428,7 +429,7 @@ func TestSystemdDriver_ExitCode(t *testing.T) {
 	}
 
 	taskCfg := newTaskConfig([]string{
-		"sh",
+		"/bin/sh",
 		"-c",
 		"exit 123",
 	})
@@ -473,7 +474,7 @@ func TestSystemdDriver_OOM(t *testing.T) {
 		// "stress",
 		// "--vm",
 		// "1",
-		"bash",
+		"/bin/bash",
 		"-ec",
 		"sleep 1;for b in {0..99999999}; do a=$b$a; done",
 	})

@@ -282,6 +282,11 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 	if driverConfig.Command == "" {
 		return nil, nil, fmt.Errorf("command name required")
 	}
+	// autoprefix command name with local task dir in case that it is not
+	// a absolute path
+	if driverConfig.Command[0] != '/' {
+		driverConfig.Command = cfg.TaskDir().Dir + "/local/" + driverConfig.Command
+	}
 
 	// TODO ensure to include port_map into tasks environment map
 	//cfg.Env = taskenv.SetPortMapEnvs(cfg.Env, driverConfig.PortMap)

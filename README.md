@@ -128,6 +128,13 @@ No configuration is possible yet.
 
 * **command** - (Manatory) The command to run in your task.
 
+The exact behavior depends on the fact if you configure a absolute (first char is a "/") or
+relative path.
+
+A command with a relative path will be prefixed with the local task directory. This makes
+it convenient to download and start a binary via  and [artifact](https://www.nomadproject.io/docs/job-specification/artifact). 
+stanza.
+
 ```hcl
 config {
   command = "some-command"
