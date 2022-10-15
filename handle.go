@@ -66,6 +66,9 @@ func (h *taskHandle) IsRunning() bool {
 func (h *taskHandle) runUnitMonitor() {
 	h.logger.Debug("Monitoring Unit", "unit", h.unitName)
 	timer := time.NewTimer(0)
+	defer func() {
+		h.logger.Debug("No longer monitoring Unit", "unit", h.unitName)
+	}()
 
 	for {
 		select {
@@ -92,7 +95,6 @@ func (h *taskHandle) runUnitMonitor() {
 				// is the unit still running?
 				if state == "inactive" || state == "failed" || props["SubState"] == "exited" {
 					gone = true
-					h.logger.Debug("props", "Result", props["Result"])
 					if props["Result"] == "oom-kill" {
 						// propagate OOM kills
 						h.exitResult.OOMKilled = true
@@ -180,6 +182,7 @@ func (h *taskHandle) runStatsEmitter(ctx context.Context, statsChannel chan *dri
 		cpuNanosProp := h.properties["CPUUsageNSec"]
 		memoryProp := h.properties["MemoryCurrent"]
 		if cpuNanosProp == nil || memoryProp == nil {
+			h.stateLock.Unlock()
 			continue
 		}
 
