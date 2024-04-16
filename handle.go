@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-hclog"
-	"github.com/hashicorp/nomad/client/stats"
+	"github.com/hashicorp/nomad/client/lib/cpustats"
 	"github.com/hashicorp/nomad/plugins/drivers"
 )
 
@@ -37,7 +37,7 @@ type taskHandle struct {
 	// task properties (periodically polled)
 	properties map[string]interface{}
 
-	totalCPUStats *stats.CpuStats
+	totalCPUStats *cpustats.Tracker
 }
 
 func (h *taskHandle) TaskStatus() *drivers.TaskStatus {

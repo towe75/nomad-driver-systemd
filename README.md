@@ -18,7 +18,7 @@ This project tries to combine a few ideas:
 But we have already [nomad exec and raw-exec](https://www.nomadproject.io/docs/drivers/exec) drivers!
 Yes, they are at first sight somewhat similar but not very feature rich and/or insecure.
 
-Other people played also with nomad and system:
+Other people played also with nomad and systemd:
 - [arianvpn/monad-driver-systemd](https://github.com/arianvp/nomad-driver-systemd)
 - [nspawn driver](https://www.nomadproject.io/plugins/drivers/community/nspawn)
 

@@ -10,7 +10,6 @@ import (
 
 	"github.com/coreos/go-systemd/v22/dbus"
 	"github.com/hashicorp/go-hclog"
-	"github.com/hashicorp/nomad/client/stats"
 	"github.com/hashicorp/nomad/drivers/shared/eventer"
 	"github.com/hashicorp/nomad/plugins/base"
 	"github.com/hashicorp/nomad/plugins/drivers"
@@ -364,7 +363,6 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 
 	h := &taskHandle{
 		taskConfig:         cfg,
-		totalCPUStats:      stats.NewCpuStats(),
 		procState:          drivers.TaskStateRunning,
 		startedAt:          time.Now().Round(time.Millisecond),
 		logger:             d.logger,
@@ -430,8 +428,7 @@ func (d *Driver) RecoverTask(handle *drivers.TaskHandle) error {
 	}
 
 	h := &taskHandle{
-		procState:     drivers.TaskStateRunning,
-		totalCPUStats: stats.NewCpuStats(),
+		procState: drivers.TaskStateRunning,
 
 		taskConfig: taskState.TaskConfig,
 		startedAt:  taskState.StartedAt,
